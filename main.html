@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таймеры</title>
+    <style>
+        :root {
+            --bg-color: #0c0d12;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --accent-1: #ff5e62;
+            --accent-2: #ff9966;
+            --accent-3: #4facfe;
+            --accent-4: #00f2fe;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Фоновые мягкие градиентные пятна с анимацией */
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.12;
+        }
+        body::before {
+            top: 5%;
+            left: 10%;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            animation: float 12s ease-in-out infinite alternate;
+        }
+        body::after {
+            bottom: 5%;
+            right: 10%;
+            background: linear-gradient(135deg, var(--accent-3), var(--accent-4));
+            animation: float 14s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-40px) scale(1.1); }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 35px;
+            z-index: 1;
+        }
+
+        .timer-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .timer-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+        }
+
+        .timer-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .timer-title span.dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .card-1 .dot { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); box-shadow: 0 0 12px var(--accent-1); }
+        .card-2 .dot { background: linear-gradient(135deg, var(--accent-3), var(--accent-4)); box-shadow: 0 0 12px var(--accent-3); }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .time-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            .timer-title {
+                font-size: 1.2rem;
+            }
+        }
+
+        .time-box {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            padding: 16px 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #f8fafc;
+        }
+        
+        .time-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-top: 6px;
+        }
+
+        /* Анимация пульсации при изменении значения */
+        @keyframes pulse-val {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.07); color: #fff; }
+            100% { transform: scale(1); }
+        }
+        .pulse {
+            animation: pulse-val 0.4s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Таймер 1 -->
+        <div class="timer-card card-1">
+            <div class="timer-title">
+                <span class="dot"></span>
+                Встреча
+            </div>
+            <div class="time-grid" id="timer-1">
+                <div class="time-box">
+                    <div class="time-value" data-type="years">00</div>
+                    <div class="time-label">Лет</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" data-type="months">00</div>
+                    <div class="time-label">Месяцев</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" data-type="days">00</div>
+                    <div class="time-label">Дней</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" data-type="hours">00</div>
+                    <div class="time-label">Часов</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" data-type="minutes">00</div>
+                    <div class="time-label">Минут</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" data-type="seconds">00</div>
+                    <div class="time-label">Секунд</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Таймер 2 -->
+        <div class="timer-card card-2">
+            <div class="timer-title">
+                <span class="dot"></span>
+                Отношения
+            </div>
+            <div class="time-grid" id="timer-2">
+                <div class="time-box">
+                    <div class="time-value" data-type="years">00</div>
+                    <div class="time-label">Лет</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" data-type="months">00</div>
+                    <div class="time-label">Месяцев</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" data-type="days">00</div>
+                    <div class="time-label">Дней</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" data-type="hours">00</div>
+                    <div class="time-label">Часов</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" data-type="minutes">00</div>
+                    <div class="time-label">Минут</div>
+                </div>
+                <div class="time-box">
+                    <div class="time-value" data-type="seconds">00</div>
+                    <div class="time-label">Секунд</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const target1 = "2028-04-01T13:25:00";
+        const target2 = "2031-06-07T02:18:00";
+
+        function calculateTimeRemaining(endtime) {
+            let now = new Date();
+            let target = new Date(endtime);
+
+            let total = target - now;
+            if (total <= 0) {
+                return { years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+            }
+
+            let years = target.getFullYear() - now.getFullYear();
+            let months = target.getMonth() - now.getMonth();
+            let days = target.getDate() - now.getDate();
+            let hours = target.getHours() - now.getHours();
+            let minutes = target.getMinutes() - now.getMinutes();
+            let seconds = target.getSeconds() - now.getSeconds();
+
+            if (seconds < 0) {
+                seconds += 60;
+                minutes--;
+            }
+            if (minutes < 0) {
+                minutes += 60;
+                hours--;
+            }
+            if (hours < 0) {
+                hours += 24;
+                days--;
+            }
+            if (days < 0) {
+                let prevMonth = new Date(target.getFullYear(), target.getMonth(), 0);
+                days += prevMonth.getDate();
+                months--;
+            }
+            if (months < 0) {
+                months += 12;
+                years--;
+            }
+
+            return { years, months, days, hours, minutes, seconds };
+        }
+
+        function updateTimer(timerId, endtime) {
+            const container = document.getElementById(timerId);
+            const t = calculateTimeRemaining(endtime);
+
+            const data = {
+                years: String(t.years).padStart(2, '0'),
+                months: String(t.months).padStart(2, '0'),
+                days: String(t.days).padStart(2, '0'),
+                hours: String(t.hours).padStart(2, '0'),
+                minutes: String(t.minutes).padStart(2, '0'),
+                seconds: String(t.seconds).padStart(2, '0')
+            };
+
+            for (let key in data) {
+                const el = container.querySelector(`[data-type="${key}"]`);
+                if (el && el.textContent !== data[key]) {
+                    el.textContent = data[key];
+                    el.classList.remove('pulse');
+                    void el.offsetWidth; // Сброс анимации для перезапуска
+                    el.classList.add('pulse');
+                }
+            }
+        }
+
+        function updateAll() {
+            updateTimer('timer-1', target1);
+            updateTimer('timer-2', target2);
+        }
+
+        updateAll();
+        setInterval(updateAll, 1000);
+    </script>
+</body>
+</html>
